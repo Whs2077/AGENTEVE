@@ -1,0 +1,4 @@
+{"run_id":"example-1","task_id":"example","path":["write_research_brief:154:22","supervisor:214:22"],"node_completion":{"write_research_brief:154:22":true,"supervisor:214:22":true}}
+{"run_id":"example-2","task_id":"example","path":["write_research_brief:154:22","supervisor:214:22"],"node_completion":{"write_research_brief:154:22":true,"supervisor:214:22":false}}
+{"run_id":"example-3","task_id":"example","path":["write_research_brief:154:22","supervisor:214:22"],"node_completion":{"write_research_brief:154:22":false,"supervisor:214:22":true}}
+{"run_id":"example-4","task_id":"example","path":["write_research_brief:154:22","supervisor:214:22"],"node_completion":{"write_research_brief:154:22":false,"supervisor:214:22":false}}

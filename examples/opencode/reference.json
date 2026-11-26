@@ -1,0 +1,29 @@
+{
+  "scope": "OpenCode v1.2.24, SessionPrompt.loop with its direct model paths. A normal turn or a compaction run uses the same LLM.stream site in a different caller context. A first-step title task is represented as a detached launch. Retry and subsequent-turn paths to the same call are combined as one edge.",
+  "entry": "__start__",
+  "nodes": [
+    ["__start__", "entry"],
+    ["turn", "llm_call"],
+    ["compaction", "llm_call"],
+    ["title", "llm_call"],
+    ["__end__", "terminal"]
+  ],
+  "edges": [
+    ["__start__", "turn", "next", "next_call"],
+    ["__start__", "compaction", "next", "next_call"],
+    ["__start__", "__end__", "next", "next_call"],
+    ["__start__", "title", "launch", "async_launch"],
+    ["turn", "turn", "next", "next_call"],
+    ["turn", "compaction", "next", "next_call"],
+    ["turn", "__end__", "next", "next_call"],
+    ["compaction", "compaction", "next", "next_call"],
+    ["compaction", "turn", "next", "next_call"],
+    ["compaction", "__end__", "next", "next_call"]
+  ],
+  "cycle_nodes": ["compaction", "turn"],
+  "call_sites": {
+    "turn": {"file": "processor.ts", "line": 53, "caller_file": "prompt.ts", "caller_line": 658},
+    "compaction": {"file": "processor.ts", "line": 53, "caller_file": "compaction.ts", "caller_line": 202},
+    "title": {"file": "prompt.ts", "line": 1928, "caller_file": "prompt.ts", "caller_line": 329}
+  }
+}

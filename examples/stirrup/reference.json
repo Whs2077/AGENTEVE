@@ -1,0 +1,21 @@
+{
+  "scope": "Manual reference for Stirrup 0.2.1, c092cee8. Normal paths in Agent.run, with finish/turn-cap exits and summarizer text fallback. Includes the zero-turn path when the incoming history already meets the cap. Model calls in injected tool agents and exceptional recovery are outside scope.",
+  "entry": "__start__",
+  "nodes": [
+    ["__start__", "entry"],
+    ["Agent.step:1301:35", "llm_call"],
+    ["Agent.summarize_messages:1378:37", "llm_call"],
+    ["__end__", "terminal"]
+  ],
+  "edges": [
+    ["__start__", "Agent.step:1301:35", "next", "next_call"],
+    ["__start__", "__end__", "next", "next_call"],
+    ["Agent.step:1301:35", "Agent.step:1301:35", "next", "next_call"],
+    ["Agent.step:1301:35", "Agent.summarize_messages:1378:37", "next", "next_call"],
+    ["Agent.step:1301:35", "__end__", "next", "next_call"],
+    ["Agent.summarize_messages:1378:37", "Agent.summarize_messages:1378:37", "next", "next_call"],
+    ["Agent.summarize_messages:1378:37", "Agent.step:1301:35", "next", "next_call"]
+  ],
+  "cycle_nodes": ["Agent.step:1301:35", "Agent.summarize_messages:1378:37"]
+}
+

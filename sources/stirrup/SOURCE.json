@@ -1,0 +1,33 @@
+{
+  "repository": "https://github.com/ArtificialAnalysis/Stirrup",
+  "commit": "c092cee80ce09cd1dfb93aef053296a9ecd9dbb6",
+  "package_version": "0.2.1",
+  "license": "MIT",
+  "files": [
+    {
+      "path": "LICENSE",
+      "git_blob": "a590cbf15a0226e5cce06ac84a5e3913c0a66fe9",
+      "sha256": "06b15284cce5761591c0a89c91208ba9f85845f1cef9452a97b97891003ea378"
+    },
+    {
+      "path": "pyproject.toml",
+      "git_blob": "9667c4e46bd0a7c47e09a281f8918242240c247d",
+      "sha256": "d442cb36daca7cb284b704fbba96188b1b55ab8c23d54f57d840596c38efc5e8"
+    },
+    {
+      "path": "src/stirrup/core/agent.py",
+      "git_blob": "c28532fa29277b0a071481fc9288ef4208831d98",
+      "sha256": "560895c9a9e702f6b45f8972a87ef43c58fe991c393ec7f7742b0b035d1ce3fc"
+    },
+    {
+      "path": "src/stirrup/core/models.py",
+      "git_blob": "c911f2c3f9dd4a7d5ff4589601e5f348df8437b2",
+      "sha256": "7816882565577fa96dd11ff574fb66d7ce637c040e5799730aee8310ab49b96c"
+    },
+    {
+      "path": "src/stirrup/clients/chat_completions_client.py",
+      "git_blob": "3201448a69551b58ff8abe9751e6f94daddae00b",
+      "sha256": "c312035d9e3068c1396548a35b5e52dad3d1549b06d0d3b408e5c681d45df161"
+    }
+  ]
+}

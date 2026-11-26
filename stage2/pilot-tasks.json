@@ -1,0 +1,82 @@
+{
+  "id": "odr-planning-smoke-v1",
+  "split": "development-pilot",
+  "seeds": [101, 203, 307],
+  "tasks": [
+    {
+      "id": "P01",
+      "prompt": "Compare public libraries in Seattle and Portland from 2019 to 2023, focusing on annual library visits and circulation. I want the comparison to use official annual reports.",
+      "required": {
+        "Seattle": ["Seattle"],
+        "Portland": ["Portland"],
+        "2019": ["2019"],
+        "2023": ["2023"],
+        "visits": ["visits", "visitors", "attendance"],
+        "circulation": ["circulation", "loans", "checkouts"],
+        "annual reports": ["annual reports", "annual report"]
+      }
+    },
+    {
+      "id": "P02",
+      "prompt": "Compare the museums Tate Modern and MoMA on admission price and opening hours. Use each museum's official website and distinguish free general admission from paid tickets.",
+      "required": {
+        "Tate Modern": ["Tate Modern"],
+        "MoMA": ["MoMA", "Museum of Modern Art"],
+        "admission price": ["admission", "tickets", "ticket prices"],
+        "opening hours": ["opening hours", "operating hours", "hours of operation"],
+        "free": ["free", "no charge"],
+        "official website": ["official website", "official websites", "museum websites"]
+      }
+    },
+    {
+      "id": "P03",
+      "prompt": "Compare the public bicycle-share programs Vélib and Citi Bike in 2023. Find membership prices and the number of stations from official sources, and keep day passes separate from annual memberships.",
+      "required": {
+        "Vélib": ["Vélib", "Velib"],
+        "Citi Bike": ["Citi Bike", "Citibike"],
+        "2023": ["2023"],
+        "membership": ["membership", "memberships", "subscriptions"],
+        "stations": ["stations", "docks", "docking stations"],
+        "day passes": ["day pass", "day passes", "daily passes", "daily pass"]
+      }
+    },
+    {
+      "id": "P04",
+      "prompt": "Compare Wimbledon and the US Open for the 2024 women's singles tournaments. Research prize money and the playing surface, using official tournament information. Focus on singles and exclude doubles.",
+      "required": {
+        "Wimbledon": ["Wimbledon"],
+        "US Open": ["US Open", "U.S. Open"],
+        "2024": ["2024"],
+        "women": ["women", "women's", "ladies"],
+        "singles": ["singles"],
+        "prize money": ["prize money", "prize pool", "prize purse"],
+        "surface": ["surface", "surfaces", "court type"]
+      }
+    },
+    {
+      "id": "P05",
+      "prompt": "Compare Amtrak and VIA Rail bicycle policies for intercity trains. Look up whether bikes need reservations and what fees apply. Use each operator's official policy, and distinguish assembled bikes from boxed bikes.",
+      "required": {
+        "Amtrak": ["Amtrak"],
+        "VIA Rail": ["VIA Rail"],
+        "bicycle": ["bike", "bikes", "bicycle", "bicycles"],
+        "reservations": ["reservation", "reservations", "booking", "advance booking"],
+        "fees": ["fee", "fees", "price", "cost", "costs"],
+        "boxed bikes": ["boxed", "box", "packaged"]
+      }
+    },
+    {
+      "id": "P06",
+      "prompt": "Compare the public transit agencies TfL and RATP for 2022 and 2023. Find annual ridership and operating revenue, using their official annual reports. Report the currencies as stated in the reports.",
+      "required": {
+        "TfL": ["TfL", "Transport for London"],
+        "RATP": ["RATP"],
+        "2022": ["2022"],
+        "2023": ["2023"],
+        "ridership": ["ridership", "passenger journeys", "passenger trips", "passenger numbers"],
+        "operating revenue": ["operating revenue", "operating revenues", "operating income"],
+        "annual reports": ["annual report", "annual reports"]
+      }
+    }
+  ]
+}

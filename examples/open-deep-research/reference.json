@@ -1,0 +1,29 @@
+{
+  "scope": "Manual business-route reference from llm-call-flow.dot, Open Deep Research 1b7d2e80. Normal paths, with start and end. Parallel sub-research is represented by a worker path and its return to the supervisor.",
+  "entry": "__start__",
+  "nodes": [
+    ["__start__", "entry"],
+    ["clarify_with_user:101:22", "llm_call"],
+    ["write_research_brief:154:22", "llm_call"],
+    ["supervisor:214:22", "llm_call"],
+    ["researcher:415:22", "llm_call"],
+    ["compress_research:551:30", "llm_call"],
+    ["final_report_generation:650:34", "llm_call"],
+    ["__end__", "terminal"]
+  ],
+  "edges": [
+    ["__start__", "clarify_with_user:101:22", "next", "next_call"],
+    ["__start__", "write_research_brief:154:22", "next", "next_call"],
+    ["clarify_with_user:101:22", "write_research_brief:154:22", "next", "next_call"],
+    ["clarify_with_user:101:22", "__end__", "next", "next_call"],
+    ["write_research_brief:154:22", "supervisor:214:22", "next", "next_call"],
+    ["supervisor:214:22", "supervisor:214:22", "next", "next_call"],
+    ["supervisor:214:22", "researcher:415:22", "next", "next_call"],
+    ["supervisor:214:22", "final_report_generation:650:34", "next", "next_call"],
+    ["researcher:415:22", "researcher:415:22", "next", "next_call"],
+    ["researcher:415:22", "compress_research:551:30", "next", "next_call"],
+    ["compress_research:551:30", "supervisor:214:22", "next", "next_call"],
+    ["final_report_generation:650:34", "__end__", "next", "next_call"]
+  ],
+  "cycle_nodes": ["supervisor:214:22", "researcher:415:22", "compress_research:551:30"]
+}

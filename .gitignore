@@ -1,0 +1,16 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+node_modules/
+.env
+.env.*
+*.pem
+*.gguf
+*.pptx
+/outputs/
+/results/
+/stage2/model-cache/
+/sources/stirrup-runtime/
+/stage2/holdout-tasks.json
+/stage2/paired-hotpotqa*.json

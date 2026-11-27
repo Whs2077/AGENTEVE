@@ -20,6 +20,7 @@ from urllib.request import HTTPRedirectHandler, Request as HTTPRequest, build_op
 import warnings
 
 from common.fileStore import fileSha256 as sha256, readJson as read, writeJson as write
+from src.core.nodePasses import writeNodePasses
 
 ROOT = Path(__file__).resolve().parents[2]
 SNAPSHOT = ROOT / "instances/odr"
@@ -529,7 +530,6 @@ def recordPlanningTrials(args):
                     break
             if runs[-1]["infrastructure_error"]:
                 break
-    from src.core.nodePasses import writeNodePasses
     writeNodePasses(output / "nodePasses.jsonl", runs)
     failed = [row["run_id"] for row in runs if row["infrastructure_error"]]
     print(f"{len(runs) - len(failed)}/{len(tasks) * len(seeds)} scored runs -> {output}", flush=True)

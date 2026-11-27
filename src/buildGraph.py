@@ -1,14 +1,18 @@
 """Build a call graph from a fixed source snapshot and check it against a reference."""
 
-import argparse
 import json
 from pathlib import Path
-import sys
 
 from common.callPaths import edgeDropChecks, nextCallAdjacency, reachablePairs
 from common.fileStore import readJson, writeJson
-from common.runLog import useLevel
-from src.core.graphModel import Source, Unsupported, writeGraph
+from src.core.declaredTopology import readDeclaredTopology
+from src.core.graphModel import Source
+from src.core.graphOutput import writeGraph
+from src.core.projectFromApi import projectFromApi
+from src.core.projectNextCall import projectNextCall
+from src.core.projectStirrup import projectStirrup
+
+ADAPTERS = ("locateApi", "projectNextCall", "projectStirrup", "readDeclaredTopology")
 
 
 def matchSets(actual, expected):
@@ -96,67 +100,24 @@ def checkGraph(graphPath, referencePath):
 
 def buildGraph(source, adapter, outDir, *, builder=None, reference=None, sourceUrl=None,
                clientProtocol=None, clientProtocolUrl=None, coordinates="file"):
-    """Extract one call graph and, when a reference is given, check it."""
+    """Extract one call graph, write every view of it, and check it when a reference is given."""
     outDir = Path(outDir)
     source = Path(source)
-    if adapter == "projectNextCall":
-        from src.core.projectNextCall import projectNextCall, writeDot
-        graph = projectNextCall(Source(source, sourceUrl, coordinates), builder)
-        writeGraph(outDir, graph, reference=reference)
-        writeDot(outDir / "callGraph.dot", graph)
+    if adapter not in ADAPTERS:
+        raise ValueError(f"Unknown adapter {adapter}. Choose one of {', '.join(ADAPTERS)}")
+    if adapter == "locateApi":
+        graph = projectFromApi(source, builder=builder, protocol=clientProtocol, sourceUrl=sourceUrl,
+                               protocolUrl=clientProtocolUrl, coordinates=coordinates)
     elif adapter == "projectStirrup":
-        from src.core.projectNextCall import writeDot
-        from src.core.projectStirrup import projectStirrup
         if clientProtocol is None:
-            raise ValueError("projectStirrup requires --client-protocol")
+            raise ValueError("projectStirrup requires clientProtocol")
         graph = projectStirrup(Source(source, sourceUrl, coordinates),
                                Source(clientProtocol, clientProtocolUrl, coordinates))
-        writeGraph(outDir, graph, reference=reference)
-        writeDot(outDir / "callGraph.dot", graph)
-    elif adapter == "readDeclaredTopology":
-        from src.core.declaredTopology import readDeclaredTopology
-        graph = readDeclaredTopology(Source(source, sourceUrl, coordinates), builder)
-        writeGraph(outDir, graph, reference=reference)
-    elif adapter == "locateApi":
-        from src.core.projectFromApi import projectFromApi
-        from src.core.projectNextCall import writeDot
-        graph = projectFromApi(
-            source, builder=builder, protocol=clientProtocol, sourceUrl=sourceUrl,
-            protocolUrl=clientProtocolUrl, coordinates=coordinates,
-        )
-        writeGraph(outDir, graph, reference=reference)
-        writeDot(outDir / "callGraph.dot", graph)
+    elif adapter == "projectNextCall":
+        graph = projectNextCall(Source(source, sourceUrl, coordinates), builder)
     else:
-        raise ValueError(f"Unknown adapter {adapter}")
+        graph = readDeclaredTopology(Source(source, sourceUrl, coordinates), builder)
+    writeGraph(outDir, graph, reference=reference)
     if reference:
         return checkGraph(outDir / "callGraph.json", reference)
     return 0
-
-
-def main(argv):
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("source", type=Path)
-    parser.add_argument("--adapter", required=True, choices=[
-        "locateApi", "projectNextCall", "projectStirrup", "readDeclaredTopology",
-    ])
-    parser.add_argument("--builder")
-    parser.add_argument("--reference", type=Path)
-    parser.add_argument("--source-url")
-    parser.add_argument("--coordinates", choices=["file", "browser-text"], default="file")
-    parser.add_argument("--client-protocol", type=Path)
-    parser.add_argument("--client-protocol-url")
-    parser.add_argument("--out", type=Path, required=True)
-    args = parser.parse_args(argv)
-    try:
-        return buildGraph(
-            args.source, args.adapter, args.out, builder=args.builder, reference=args.reference,
-            sourceUrl=args.source_url, clientProtocol=args.client_protocol,
-            clientProtocolUrl=args.client_protocol_url, coordinates=args.coordinates,
-        )
-    except (ValueError, Unsupported, OSError, KeyError, TypeError) as error:
-        print(f"buildGraph: {error}", file=sys.stderr)
-        return 2
-
-
-if __name__ == "__main__":
-    sys.exit(main(useLevel(sys.argv[1:])))

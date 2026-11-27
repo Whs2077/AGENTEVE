@@ -3,7 +3,7 @@ from pathlib import Path
 import tempfile
 import unittest
 
-from src.core.graphModel import writeGraph
+from src.core.graphOutput import writeGraph
 from src.core.nodePasses import nodePassRecords, passCounts
 from src.postEvaluation import postEvaluation
 

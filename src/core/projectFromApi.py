@@ -4,14 +4,19 @@ The located site selects the path analysis. LangGraph node names and Agent
 method names are produced by that analysis, not by the locator.
 """
 
+import ast
+import json
 from pathlib import Path
 import shutil
 import subprocess
 import tempfile
 
+from src.core.apiSite import ApiProtocol, iter_source_files
 from src.core.callHierarchy import hierarchy
 from src.core.graphModel import Source, Unsupported, completeGraph
-from src.core.locateLlmApi import ApiProtocol, iter_source_files, locate
+from src.core.locateLlmApi import locate
+from src.core.projectNextCall import projectNextCall
+from src.core.projectStirrup import projectStirrup
 
 
 def projectFromApi(source, *, builder=None, protocol=None, sourceUrl=None, protocolUrl=None,
@@ -52,7 +57,6 @@ def _project_langchain(sites, builder, sourceUrl, coordinates):
     files = _files_for(sites, {ApiProtocol.LANGCHAIN_INVOKE.value, ApiProtocol.LANGCHAIN_FACTORY.value})
     source = Source(files[0], sourceUrl, coordinates)
     selected = builder or _pick_builder(source.tree, sites)
-    from src.core.projectNextCall import projectNextCall
     return projectNextCall(source, selected)
 
 
@@ -67,7 +71,6 @@ def _project_stirrup(sites, protocol, sourceUrl, protocolUrl, coordinates):
             protocol_path = sibling
     if protocol_path is None:
         raise Unsupported(f"Agent API sites in {agent.name} need the LLMClient protocol file")
-    from src.core.projectStirrup import projectStirrup
     return projectStirrup(Source(agent, sourceUrl, coordinates), Source(protocol_path, protocolUrl, coordinates))
 
 
@@ -87,13 +90,11 @@ def _project_opencode(root, sites, sourceUrl):
         if completed.returncode != 0 or not output.is_file():
             detail = (completed.stderr or completed.stdout or "node failed").strip()
             raise Unsupported(f"OpenCode path analysis failed after streamText was located: {detail}")
-        import json
         graph = json.loads(output.read_text(encoding="utf-8"))
     return completeGraph(graph)
 
 
 def _pick_builder(tree, sites):
-    import ast
     names = {_short(site.symbol) for site in sites}
     scores = {}
     for node in ast.walk(tree):

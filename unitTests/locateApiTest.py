@@ -3,9 +3,10 @@ from pathlib import Path
 import tempfile
 import unittest
 
+from src.core.apiSite import iter_source_files
 from src.core.callHierarchy import hierarchy
 from src.core.graphModel import Unsupported
-from src.core.locateLlmApi import iter_source_files, locate
+from src.core.locateLlmApi import locate
 from src.core.projectFromApi import projectFromApi
 
 

@@ -8,25 +8,29 @@
 
 ```text
 AGENTEVE/
-├── main.py                          命令行。按子命令调用 src 里的步骤
+├── main.py                          唯一命令行入口。按子命令调用 src 里的步骤
 ├── config.json                      路径、适配器、预算、模型和节点编号
 ├── requirements.txt                 在线跑题用的 LangChain 与 LangGraph 版本
 ├── src/
-│   ├── buildGraph.py                抽出调用图，并与参考图比较
+│   ├── buildGraph.py                按适配器抽出调用图，写出各视图，并与参考图比较
 │   ├── evaluating.py                读调用图和题单，写出 trials.jsonl
 │   ├── postEvaluation.py            读调用图和轨迹，写出结果、步骤数据、轨迹和报告
 │   ├── runBenchmark.py              按建图、记录、后评估顺序执行
 │   └── core/
 │       ├── graphModel.py            图对象、源码位置、入口可达和回路
-│       ├── flowView.py              把流图写成可打开的 HTML
+│       ├── graphOutput.py           写出 callGraph 的 JSON、真值依据、Mermaid、DOT 和 HTML
+│       ├── flowView.py              把流图渲染成可打开的 HTML
 │       ├── nodePasses.py            逐次访问和逐次验收的原始记录
+│       ├── pyScan.py                Python 语法树查询：点号名、所在函数、导入
+│       ├── tsScan.py                按词法读取 TypeScript 函数和调用
+│       ├── apiSite.py               API 调用点记录、分桶与协议名、LangChain 调用名
+│       ├── locateLlmApi.py          第一、二桶：框架写法与固定协议定位，不产生图节点
+│       ├── locateByModel.py         第三桶：模型只给文件、行号和符号，并核对
+│       ├── callHierarchy.py         从调用点取 incoming 与 outgoing
 │       ├── declaredTopology.py      只读 StateGraph 建造语句
 │       ├── projectNextCall.py       把正常路径投影成下一次模型调用
 │       ├── projectStirrup.py        沿 Agent.run 投影到 LLMClient.generate
-│       ├── locateLlmApi.py          分桶定位大模型 API，不产生图节点
-│       ├── tsScan.py                按词法读取 TypeScript 函数和调用
-│       ├── callHierarchy.py         从调用点取 incoming 与 outgoing
-│       ├── projectFromApi.py        定位之后做路径分析
+│       ├── projectFromApi.py        定位之后选择路径分析
 │       └── planningTrial.py         简报到主管的试点、词面验收和模型客户端
 ├── common/
 │   ├── fileStore.py                 读 JSON、写 JSON、计算文件哈希
@@ -78,7 +82,7 @@ AGENTEVE/
 └── results/                         运行产物。不纳入版本库
 ```
 
-`src` 里的三步互不 import。建图写出 `callGraph.json` 和 `callGraph.html`，记录写出 `trials.jsonl` 和 `nodePasses.jsonl`，后评估读调用图和轨迹。
+`src` 里的三步互不 import，只由 `runBenchmark.py` 串起来。依赖单向向下：`main.py` → `src/*.py` → `src/core` → `common`，`src/core` 内部也没有循环或回调。`pyScan`、`tsScan`、`apiSite`、`graphModel` 是最底层，只被上层引用。建图写出 `callGraph.json`、`groundTruth.json`、`callGraph.mmd`、`callGraph.dot` 和 `callGraph.html`，记录写出 `trials.jsonl` 和 `nodePasses.jsonl`，后评估读调用图和轨迹。
 
 ## 项目内容
 

@@ -4,7 +4,7 @@ from pathlib import Path
 import re
 
 _TOKEN = re.compile(r"[A-Za-z_$][\w$]*|[{}()]|\.")
-_KEYWORDS = {"if", "for", "while", "switch", "catch", "return", "function", "namespace", "async", "await"}
+KEYWORDS = {"if", "for", "while", "switch", "catch", "return", "function", "namespace", "async", "await"}
 
 def typescript_calls(path):
     """Return stream, chat, and deepagent calls with the function that contains them."""
@@ -16,7 +16,7 @@ def typescript_calls(path):
         callee, end = _dotted(tokens, index)
         if end + 1 >= len(tokens) or tokens[end + 1][0] != "(":
             continue
-        if callee.split(".")[-1] in _KEYWORDS:
+        if callee.split(".")[-1] in KEYWORDS:
             continue
         symbol = _stack_symbol(functions["ranges"], index) or "<module>"
         calls.append({"callee": callee, "symbol": symbol, "line": line, "column": column})

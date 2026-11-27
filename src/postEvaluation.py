@@ -2,12 +2,12 @@
 
 import json
 from collections import Counter, defaultdict
-
 from pathlib import Path
 
 from common.callPaths import edgeDropChecks, nextCallAdjacency, provenance, reachablePairs, shortestPaths
 from common.fileStore import readJson, writeJson
 from common.runLog import warn
+from src.core.nodePasses import passCounts, writeNodePasses
 
 
 def fraction(count, total):
@@ -19,23 +19,7 @@ def readTrials(path):
     runs = [json.loads(line) for line in path.read_text(encoding="utf-8-sig").splitlines() if line.strip()]
     if not runs:
         raise ValueError(f"No recorded runs in {path}")
-    protocol_path = path.with_name("protocol.json")
-    selected = None
-    if protocol_path.exists():
-        selected = readJson(protocol_path).get("selected_edge")
-    normalized = []
-    for row in runs:
-        if "path" not in row and "llm_path" in row:
-            row = {**row, "path": row["llm_path"]}
-        if "node_completion" not in row and selected and "brief" in row and "supervisor" in row:
-            brief, supervisor = selected
-            row = {**row, "node_completion": {
-                brief: row["brief"]["complete"], supervisor: row["supervisor"]["complete"],
-            }}
-        if "node_completion" not in row:
-            row = {**row, "node_completion": {}}
-        normalized.append(row)
-    return normalized
+    return [row if "node_completion" in row else {**row, "node_completion": {}} for row in runs]
 
 
 def pairStepGrades(source_grades, target_grades, n_runs):
@@ -260,8 +244,6 @@ def trialOutcome(row):
     brief, supervisor = row.get("brief"), row.get("supervisor")
     if isinstance(brief, dict) and isinstance(supervisor, dict):
         return bool(brief.get("complete") and supervisor.get("complete"))
-    if "answer_match" in row and "support_match" in row:
-        return bool(row["answer_match"] and row["support_match"])
     return None
 
 
@@ -271,7 +253,6 @@ def postEvaluation(callGraphPath, trialsPath, outDir):
     outDir.mkdir(parents=True, exist_ok=False)
     graph = readJson(callGraphPath)
     runs = readTrials(trialsPath)
-    from src.core.nodePasses import passCounts, writeNodePasses
     measured = measureTrials(graph, runs)
     measured["pass_counts"] = passCounts(writeNodePasses(outDir / "nodePasses.jsonl", runs))
     byTask = {}
@@ -318,26 +299,5 @@ def postEvaluation(callGraphPath, trialsPath, outDir):
     (outDir / "report.md").write_text(report, encoding="utf-8")
     print(f"{measured['scored_runs']} scored runs, {len(measured['nodes'])} nodes -> {outDir / 'report.md'}")
     return 0
-
-
-def main(argv):
-    import argparse
-    import sys
-    from common.runLog import useLevel
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--graph", type=Path, required=True)
-    parser.add_argument("--trials", type=Path, required=True)
-    parser.add_argument("--out", type=Path, required=True)
-    args = parser.parse_args(useLevel(argv))
-    try:
-        return postEvaluation(args.graph, args.trials, args.out)
-    except (OSError, ValueError, KeyError, TypeError) as error:
-        print(f"postEvaluation: {error}", file=sys.stderr)
-        return 2
-
-
-if __name__ == "__main__":
-    import sys
-    sys.exit(main(sys.argv[1:]))
 
 

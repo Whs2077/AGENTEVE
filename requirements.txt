@@ -1,0 +1,4 @@
+langchain==1.5.0
+langchain-core==1.8.0
+langgraph==1.2.22
+langgraph-prebuilt==1.1.2

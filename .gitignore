@@ -3,14 +3,14 @@ __pycache__/
 .pytest_cache/
 .venv/
 node_modules/
+
 .env
 .env.*
 *.pem
 *.gguf
-*.pptx
-/outputs/
+
+# buildGraph、evaluating、postEvaluation、runBenchmark 写出的目录
 /results/
+
+# planningTrial 读取的本地模型权重
 /stage2/model-cache/
-/sources/stirrup-runtime/
-/stage2/holdout-tasks.json
-/stage2/paired-hotpotqa*.json

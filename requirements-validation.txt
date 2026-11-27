@@ -1,7 +1,0 @@
-deepagents==0.7.38
-langchain==1.5.0
-langchain-core==1.8.0
-langgraph==1.2.22
-langgraph-prebuilt==1.1.2
-langsmith==0.14.17
-mini-swe-agent==2.4.6

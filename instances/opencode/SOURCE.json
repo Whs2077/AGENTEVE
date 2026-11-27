@@ -1,0 +1,43 @@
+{
+  "repository": "https://github.com/anomalyco/opencode",
+  "tag": "v1.2.24",
+  "commit": "c6262f9d4002d86a1f1795c306aa329d45361d12",
+  "license": "MIT",
+  "files": [
+    {
+      "path": "LICENSE",
+      "git_blob": "6439474beed8e0271df9862eff97ffd70ec2464c",
+      "sha256": "625f0f619133f89bbbb2abe37369613dfa1885eba1e50d02170deb62bb42cb6b"
+    },
+    {
+      "path": "session/prompt.ts",
+      "git_blob": "4f77920cc9879f97e79ab5c48446d45aaeec2ad1",
+      "sha256": "1133d19ca53bc7506d747568301be32f35f28ecda459e4b065e1334c006a4f06"
+    },
+    {
+      "path": "session/processor.ts",
+      "git_blob": "67edc0ecfe35853200c99ff8fd796a6c12c9dd2c",
+      "sha256": "d9ae2bbabee22a73a2fe84c78712ef985c2b16b921588012804ec423f2187983"
+    },
+    {
+      "path": "session/llm.ts",
+      "git_blob": "4e42fb0d2ec7edbaeb714a98235483544cb0796d",
+      "sha256": "bb2705e72a2ec4c464dbc690918af6fc54cd6aeed08a533d735ac261d6c1aff4"
+    },
+    {
+      "path": "session/compaction.ts",
+      "git_blob": "79884d641ea0149f661bf7ec801fddbf5612ffbd",
+      "sha256": "cd0ed98c7f93e09a84767e072564a690cf816f701ea7305314daf0fb6ce466de"
+    },
+    {
+      "path": "session/summary.ts",
+      "git_blob": "349336ba788fe3196eeadce210a262694ac7affe",
+      "sha256": "13a3ee5a0fdf9844989de2ff71ee9a1a851bf87afa66cb301ecf0b600ba2811e"
+    },
+    {
+      "path": "session/retry.ts",
+      "git_blob": "6d057f539f81e1173e03320566ed08f8ff13bfc2",
+      "sha256": "bbead3ec84bbc755d6cb35bef09801bb49d99ae0460b29c8a92084adec7ddbf3"
+    }
+  ]
+}

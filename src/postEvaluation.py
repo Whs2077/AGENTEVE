@@ -6,7 +6,7 @@ from pathlib import Path
 
 from common.callPaths import edgeDropChecks, nextCallAdjacency, provenance, reachablePairs, shortestPaths
 from common.fileStore import readJson, writeJson
-from common.runLog import warn
+from common.runLog import info, warn
 from src.core.nodePasses import passCounts, writeNodePasses
 
 
@@ -247,6 +247,53 @@ def trialOutcome(row):
     return None
 
 
+def locateLogicFaults(result):
+    """Locate nodes that break static reachability or upstream-downstream order.
+
+    The call graph and recorded pass values are the only inputs. No model is called.
+    """
+    nodes = result["nodes"]
+    faults = []
+    for node, row in nodes.items():
+        if not row["entry_path"]:
+            faults.append({"node": node, "reason": "unreachable"})
+    for edge in result["edges"]:
+        source, target = edge["source"], edge["target"]
+        source_rate = nodes[source]["completion"]["rate"]
+        target_rate = nodes[target]["completion"]["rate"]
+        if source_rate is not None and target_rate is not None and target_rate > source_rate:
+            faults.append({"node": target, "upstream": source, "reason": "higher_completion_than_upstream"})
+        if edge.get("necessary_condition_candidates"):
+            faults.append({"node": target, "upstream": source, "reason": "passed_without_upstream"})
+        ratio = (edge.get("completion_count_ratio_q") or {}).get("rate")
+        if ratio is not None and ratio > 1:
+            faults.append({"node": target, "upstream": source, "reason": "completion_ratio_above_one"})
+    return faults
+
+
+def logBaseline(result):
+    """Print each node score and the statically located logic faults."""
+    nodes = result["nodes"]
+    for row in nodes.values():
+        completion = row["completion"]
+        rate = show_rate(completion) if completion["denominator"] else "未评估"
+        reached = "从入口可达" if row["entry_path"] else "从入口不可达"
+        info(f"节点 {row['label']} {reached} 完成率 {rate}")
+    reasons = {
+        "unreachable": "调用图上从入口不可达",
+        "higher_completion_than_upstream": "完成率高于直接上游",
+        "passed_without_upstream": "直接上游未通过时本节点仍通过",
+        "completion_ratio_above_one": "完成个数之比高于直接上游",
+    }
+    for fault in locateLogicFaults(result):
+        label = nodes[fault["node"]]["label"]
+        if "upstream" in fault:
+            upstream = nodes[fault["upstream"]]["label"]
+            warn(f"逻辑异常 {label}：相对 {upstream}，{reasons[fault['reason']]}")
+        else:
+            warn(f"逻辑异常 {label}：{reasons[fault['reason']]}")
+
+
 def postEvaluation(callGraphPath, trialsPath, outDir):
     """Read a call graph and trial records. Write results, step data, trajectories, and a report."""
     outDir = Path(outDir)
@@ -297,6 +344,7 @@ def postEvaluation(callGraphPath, trialsPath, outDir):
     })
     report = renderReport(measured)
     (outDir / "report.md").write_text(report, encoding="utf-8")
+    logBaseline(measured)
     print(f"{measured['scored_runs']} scored runs, {len(measured['nodes'])} nodes -> {outDir / 'report.md'}")
     return 0
 

@@ -1,6 +1,6 @@
 import unittest
 
-from src.postEvaluation import measureTrials, pairStepGrades
+from src.postEvaluation import locateLogicFaults, measureTrials, pairStepGrades
 
 
 class Reachability(unittest.TestCase):
@@ -57,3 +57,26 @@ class Reachability(unittest.TestCase):
         self.assertEqual(terminal_result["nodes"]["model"]["exit_paths_lost_without_node"], ["end"])
         self.assertIsNone(result["nodes"]["end"]["completion"]["rate"])
         self.assertFalse(any("completion_count_ratio_q" in edge for edge in result["edges"]))
+
+    def test_logic_faults_come_from_the_graph_and_recorded_passes(self):
+        graph = {
+            "entry": "start", "graph_kind": "llm_call_successors",
+            "nodes": [
+                {"id": "start", "label": "入口", "kind": "entry"},
+                {"id": "upstream", "label": "上游", "kind": "llm_call"},
+                {"id": "downstream", "label": "下游", "kind": "llm_call"},
+                {"id": "aside", "label": "旁支", "kind": "llm_call"},
+            ],
+            "edges": [
+                {"source": "start", "target": "upstream", "kind": "next_call", "route": "next"},
+                {"source": "upstream", "target": "downstream", "kind": "next_call", "route": "next"},
+            ],
+        }
+        result = measureTrials(graph, [{
+            "run_id": "r1", "task_id": "t", "path": ["start", "upstream", "downstream"],
+            "node_completion": {"upstream": False, "downstream": True},
+        }])
+        reasons = {item["reason"] for item in locateLogicFaults(result)}
+        self.assertIn("unreachable", reasons)
+        self.assertIn("passed_without_upstream", reasons)
+        self.assertIn("higher_completion_than_upstream", reasons)

@@ -106,7 +106,15 @@ def applyPlanning(config):
         planningTrial.CACHE = config["modelCache"]
 
 
+def _check_improve(config):
+    improve = config.get("improve")
+    if isinstance(improve, dict) and improve.get("enabled"):
+        from improve.settings import parse_improve
+        parse_improve(improve)
+
+
 def commandAll(config):
+    _check_improve(config)
     return runBenchmark(
         require(config, "source"), require(config, "adapter"), require(config, "out"),
         tasks=config.get("tasks"), trials=config.get("trials"), backend=config.get("backend", "api"),
@@ -114,6 +122,7 @@ def commandAll(config):
         clientProtocol=config.get("clientProtocol"), clientProtocolUrl=config.get("clientProtocolUrl"),
         coordinates=config.get("coordinates", "file"), smoke=bool(config.get("smoke", False)),
         maxOutputTokens=int(require(config, "tokenBudget")),
+        improve=config.get("improve"),
     )
 
 
@@ -135,7 +144,9 @@ def commandEvaluating(config):
 
 
 def commandPostEvaluation(config):
-    return postEvaluation(require(config, "graph"), require(config, "trials"), require(config, "out"))
+    _check_improve(config)
+    return postEvaluation(require(config, "graph"), require(config, "trials"), require(config, "out"),
+                          improve=config.get("improve"))
 
 
 COMMANDS = {

@@ -8,6 +8,7 @@ from common.callPaths import edgeDropChecks, nextCallAdjacency, provenance, reac
 from common.fileStore import readJson, writeJson
 from common.runLog import info, warn
 from src.core.nodePasses import passCounts, writeNodePasses
+from src.core.semanticRecord import format_rejected, render_single_run, summarize_single_run
 
 
 def fraction(count, total):
@@ -74,6 +75,7 @@ def measureTrials(graph, runs):
     grades = defaultdict(dict)
     observed_edges = Counter()
     unmatched_edges = []
+    format_failures = Counter()
     for row in runs:
         run_id = row["run_id"]
         if not isinstance(run_id, str) or not run_id or run_id in seen_runs:
@@ -96,6 +98,9 @@ def measureTrials(graph, runs):
             reached[node].append(run_id)
         for node, passed in completion.items():
             if passed is None:
+                continue
+            if format_rejected(row, node):
+                format_failures[node] += 1
                 continue
             if type(passed) is not bool or (passed and node not in visited):
                 raise ValueError(f"{run_id}: invalid completion for {node!r}")
@@ -123,6 +128,7 @@ def measureTrials(graph, runs):
             "exit_paths_lost_without_node": sorted((ends & entry_paths.keys()) - without_node.keys()),
             "observed_runs": reached[node], "visit_count": visits[node],
             "completion": fraction(sum(assessed.values()), len(assessed)),
+            "format_failures": format_failures[node],
             "unassessed_runs": n_runs - len(assessed),
             "completion_by_task": {
                 task: {
@@ -294,8 +300,11 @@ def logBaseline(result):
             warn(f"逻辑异常 {label}：{reasons[fault['reason']]}")
 
 
-def postEvaluation(callGraphPath, trialsPath, outDir):
+def postEvaluation(callGraphPath, trialsPath, outDir, *, improve=None, generator=None, node_runner=None):
     """Read a call graph and trial records. Write results, step data, trajectories, and a report."""
+    if isinstance(improve, dict) and improve.get("enabled"):
+        from improve.settings import parse_improve
+        parse_improve(improve)
     outDir = Path(outDir)
     outDir.mkdir(parents=True, exist_ok=False)
     graph = readJson(callGraphPath)
@@ -337,15 +346,34 @@ def postEvaluation(callGraphPath, trialsPath, outDir):
         "outcomes_recorded": len(outcomes),
         "trial_pass_rate": fraction(sum(bool(item) for item in outcomes), len(outcomes)) if outcomes else None,
     })
+    measured["single_run"] = summarize_single_run(runs, measured)
+    for item, snapshot in zip(trajectories, measured["single_run"]["runs"]):
+        item["first_incomplete_node"] = snapshot["first_incomplete_node"]
+        item["format_ok"] = snapshot["format_ok"]
+        item["semantic_retention"] = snapshot["semantic_retention"]
+        item["unsupported_share"] = snapshot["unsupported_share"]
     writeJson(outDir / "stepData.json", measured)
     writeJson(outDir / "trajectories.json", {
         "runs": trajectories,
         "unmatched_transitions": measured["unmatched_observed_transitions"],
     })
-    report = renderReport(measured)
+    report = renderReport(measured) + render_single_run(measured["single_run"])
+    report += _write_improve(improve, runs, measured, outDir, generator, node_runner)
     (outDir / "report.md").write_text(report, encoding="utf-8")
     logBaseline(measured)
     print(f"{measured['scored_runs']} scored runs, {len(measured['nodes'])} nodes -> {outDir / 'report.md'}")
     return 0
+
+
+def _write_improve(improve, runs, measured, outDir, generator, node_runner):
+    """Append improve only when it is enabled. A closed switch does not call a generator."""
+    if not isinstance(improve, dict) or not improve.get("enabled"):
+        return ""
+    from improve.runImprove import run_improve
+    from improve.settings import parse_improve
+    result = run_improve(parse_improve(improve), runs, measured, generator=generator, node_runner=node_runner)
+    writeJson(outDir / "improve.json", result["data"])
+    (outDir / "improve.md").write_text(result["markdown"], encoding="utf-8")
+    return result["markdown"]
 
 

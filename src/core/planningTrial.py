@@ -21,6 +21,7 @@ import warnings
 
 from common.fileStore import fileSha256 as sha256, readJson as read, writeJson as write
 from src.core.nodePasses import writeNodePasses
+from src.core.semanticRecord import heads_found_in_text, unsupported_of
 
 ROOT = Path(__file__).resolve().parents[2]
 SNAPSHOT = ROOT / "instances/odr"
@@ -373,6 +374,41 @@ def matchRequiredPhrases(output, required):
     return checks
 
 
+def _attach_semantic_heads(task, result):
+    """Record the four section-3.1 fields. Alias match only; no entailment model."""
+    required = task.get("required") or {}
+    prompt = str(task.get("prompt") or "")
+    brief = result.get("brief") or {}
+    supervisor = result.get("supervisor") or {}
+    user_heads = heads_found_in_text(required, prompt)
+    brief_text = str(brief.get("output") or "")
+    brief_out = heads_found_in_text(required, brief_text)
+    topic_text = "\n".join(str(item) for item in (supervisor.get("topics") or []))
+    supervisor_out = heads_found_in_text(required, topic_text)
+    brief_inputs = {"user": user_heads}
+    supervisor_inputs = {"user": user_heads, BRIEF: brief_out}
+    brief_error = brief.get("output_error")
+    supervisor_error = supervisor.get("output_error")
+    result["semantic_heads"] = {
+        BRIEF: {
+            "inputs": brief_inputs, "output": brief_out,
+            "unsupported": unsupported_of(brief_inputs, brief_out),
+            "format_ok": brief_error is None, "format_error": brief_error,
+            "prompt": prompt, "raw_output": brief_text,
+        },
+        SUPERVISOR: {
+            "inputs": supervisor_inputs, "output": supervisor_out,
+            "unsupported": unsupported_of(supervisor_inputs, supervisor_out),
+            "format_ok": supervisor_error is None, "format_error": supervisor_error,
+            "prompt": topic_text or brief_text, "raw_output": topic_text,
+        },
+    }
+    errors = [text for text in (brief_error, supervisor_error) if text]
+    result["format_ok"] = not errors
+    if errors:
+        result["format_error"] = errors[0]
+
+
 async def runPlanningTrial(task, repeat, model):
     from langchain_core.messages import HumanMessage, ToolMessage, message_to_dict
 
@@ -448,6 +484,7 @@ async def runPlanningTrial(task, repeat, model):
         result["infrastructure_error"] = str(error)
     result["elapsed_model_ms"] = sum(call.get("elapsed_ms", 0) for call in model.calls)
     result["node_completion"] = {BRIEF: a["complete"], SUPERVISOR: b["complete"]}
+    _attach_semantic_heads(task, result)
     return result
 
 

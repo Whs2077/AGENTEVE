@@ -31,5 +31,16 @@
   "supervisorNode": "supervisor:214:22",
   "modelName": "deepseek-flash",
   "apiUrl": "https://api.deepseek.com/chat/completions",
-  "apiKeyEnv": "DEEPSEEK_API_KEY"
+  "apiKeyEnv": "DEEPSEEK_API_KEY",
+  "improve": {
+    "enabled": false,
+    "repeat": 1,
+    "retain": 1,
+    "sample_count": 1,
+    "generator": {
+      "modelName": "",
+      "apiUrl": "",
+      "apiKeyEnv": "AGENTEVE_IMPROVE_API_KEY"
+    }
+  }
 }

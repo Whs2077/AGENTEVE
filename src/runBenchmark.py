@@ -10,7 +10,8 @@ from src.postEvaluation import postEvaluation
 
 def runBenchmark(source, adapter, out, *, tasks=None, trials=None, backend="local", reference=None,
                  builder=None, sourceUrl=None, clientProtocol=None, clientProtocolUrl=None,
-                 coordinates="file", smoke=False, maxOutputTokens=TOKEN_BUDGET):
+                 coordinates="file", smoke=False, maxOutputTokens=TOKEN_BUDGET, improve=None,
+                 generator=None, node_runner=None):
     """Stop at the first step that returns non-zero. ``trials`` skips recording and reads that file."""
     out = Path(out)
     if out.exists() and any(out.iterdir()):
@@ -32,4 +33,5 @@ def runBenchmark(source, adapter, out, *, tasks=None, trials=None, backend="loca
         if code:
             return code
         trialPath = out / "trials" / "trials.jsonl"
-    return postEvaluation(graph, trialPath, out / "post")
+    return postEvaluation(graph, trialPath, out / "post", improve=improve, generator=generator,
+                          node_runner=node_runner)
